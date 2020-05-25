@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="{% static 'css/NewWordCloud1.css' %}" rel="stylesheet" />
+    <script src="{% static 'js/jquery-3.1.0.js' %}"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <title>Title</title>
+</head>
+<body>
+                            <div id="addimage"></div>
+                            <div class="card mb-4" >
+                            <div class="card-header"><i class="fas fa-table mr-1"></i>{{JsonPath}}熱門關鍵字</div>
+                            <div class="card-body">
+                                <div class="table-responsive" >
+                                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                        <thead >
+                                            <tr>
+                                                <th>X數字</th>
+                                                <th>Y數字</th>
+                                            </tr>
+                                              <tr>
+                                                <th>X的值
+                                                 <select id="x_range" name="identity" method="get" style="width:50px; ">
+                                                      <option  name="audience" type="text" value="<"> <</option>
+                                                     <option  name="audience" type="text" value="<="> <=</option>
+                                                      <option   name="speech" type="text" value="="> = </option>
+                                                     <option  name="audience" type="text" value=">"> > </option>
+                                                     <option  name="audience" type="text" value="<="> <=</option>
+                                                 </select>
+                                                <input placeholder="X值的範圍" value="" id="x_data">
+                                                <button id="x_button">搜尋</button></th>
+                                                <th>Y的值
+                                                 <select id="y_range" name="identity" method="get" style="width:50px; ">
+                                                      <option  name="audience" type="text" value="<"> <</option>
+                                                     <option  name="audience" type="text" value="<="> <=</option>
+                                                      <option   name="speech" type="text" value="="> = </option>
+                                                     <option  name="audience" type="text" value=">"> > </option>
+                                                     <option  name="audience" type="text" value="<="> <=</option>
+                                                 </select>
+                                                <input placeholder="y值的範圍" value="" id="y_data">
+                                                <button id="y_button">搜尋</button></th>
+                                            </tr>
+                                        </thead>
+                                        <tfoot id="scrollTest">
+                                        </tfoot>
+
+                                    </table>
+                                    <th><button value="畫圖" id="drawing">畫圖</button></th>
+
+                                </div>
+                            </div>
+                        </div>
+
+
+            <script>
+                    $.ajax
+                    ({
+                        url: "/table_ajax/",
+                        data: {},
+                        success: function(data)
+                        {
+                            $results = data["results"];
+                            $($results).each(function()
+                            {
+                                $('#scrollTest').append(`<tr class="drawing_data" id=`+$(this)[0]['id']+`><td>`+$(this)[0]['data_x']+`</td><td>`+$(this)[0]['data_y']+`</td> </tr>`);
+                            })
+                        }
+
+                    });
+             </script>
+            <script>
+                    $('#y_button').click(function(){
+                    y_range=document.getElementById("y_range").value;
+                    y_data=document.getElementById("y_data").value;
+                    $.ajax
+                    ({
+                        type: "POST",
+                        data: {"y_range":y_range,"y_data":y_data},
+                        url: "/table_ajax/y_search/",
+                        success: function(data)
+                        {
+                            $('#scrollTest').html("");
+                            $.each(data,function(i,item)
+                            {
+                                $('#scrollTest').append(`<tr class="drawing_data" id=`+item.id+`><td>`+item.data_x+`</td><td>`+item.data_y+`</td> </tr>`);
+                            })
+                        }
+                    });
+                    });
+            </script>
+            <script>
+                    $('#x_button').click(function(){
+                    x_range=document.getElementById("x_range").value;
+                    x_data=document.getElementById("x_data").value;
+                    $.ajax
+                    ({
+                        type: "POST",
+                        data: {"x_range":x_range,"x_data":x_data},
+                        url: "/table_ajax/x_search/",
+                        success: function(data)
+                        {
+                            $('#scrollTest').html("");
+                            $.each(data,function(i,item)
+                            {
+                                $('#scrollTest').append(`<tr class="drawing_data" id=`+item.id+`><td>`+item.data_x+`</td><td>`+item.data_y+`</td> </tr>`);
+                            })
+                        }
+                    });
+                    });
+            </script>
+            <script>
+                $('#drawing').click(function(){
+                $('#addimage').html("");
+                data_list=[];
+                 var table=document.getElementById('dataTable');
+                  var rows = table.rows;//獲取所有行
+                  x_data=[];
+                  y_data=[];
+                  for(var i=3; i < rows.length; i++  ){
+                     var row = rows[i];//獲取每一行
+                     x_data.push(row.cells[0].innerHTML);
+                     y_data.push(row.cells[1].innerHTML);
+                  }
+                  data_list.push(x_data,y_data);
+                  $.ajax({
+                        url: "/table_ajax/drawing/",
+                        data: {"data_list":JSON.stringify(data_list)},
+                        type: "POST",
+                        success: function(data)
+                        {
+
+                            $('#addimage').html(` <img  src="/static`+data["imgpath"]+`">`);
+                        }
+                  });
+                });
+            </script>
+</body>
+</html>
